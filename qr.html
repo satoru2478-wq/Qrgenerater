@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Qr Generator | Vedant</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    <style>
+        /* --- 1. GLOBAL RESET & RAINBOW BACKGROUND --- */
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            font-family: 'Outfit', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            
+            /* THE FULL SPECTRUM GRADIENT */
+            background: linear-gradient(125deg, 
+                #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3, #ff0080);
+            background-size: 1400% 1400%;
+            animation: rainbowMove 20s ease infinite;
+            
+            color: white;
+            overflow: hidden; /* Prevents scrollbars */
+        }
+
+        /* Animation to cycle through all colors smoothly */
+        @keyframes rainbowMove {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* --- 2. GLASS CARD CONTAINER --- */
+        .main-card {
+            background: rgba(0, 0, 0, 0.4); /* Darker glass for contrast against bright colors */
+            box-shadow: 0 20px 50px 0 rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            padding: 50px;
+            width: 420px;
+            text-align: center;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* --- 3. TYPOGRAPHY --- */
+        h1 {
+            font-weight: 700;
+            font-size: 32px;
+            margin-bottom: 5px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: white;
+            text-shadow: 0 0 10px rgba(255,255,255,0.3);
+        }
+        
+        p.subtitle {
+            font-size: 13px;
+            color: rgba(255,255,255,0.7);
+            margin-bottom: 30px;
+            font-weight: 300;
+        }
+
+        /* --- 4. INPUTS & CONTROLS --- */
+        .control-group { margin-bottom: 20px; text-align: left; }
+        
+        label {
+            display: block;
+            font-size: 12px;
+            font-weight: 700;
+            color: rgba(255,255,255,0.9);
+            margin-bottom: 8px;
+            margin-left: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        input[type="text"], select {
+            width: 100%;
+            padding: 15px;
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-family: 'Outfit', sans-serif;
+            font-size: 14px;
+            transition: 0.3s;
+            outline: none;
+        }
+
+        input[type="text"]::placeholder { color: rgba(255,255,255,0.4); }
+
+        input[type="text"]:focus {
+            border-color: #ffffff;
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 0 15px rgba(255,255,255,0.1);
+        }
+
+        select option {
+            background: #222; /* Fix for dropdown options being white-on-white */
+            color: white;
+        }
+
+        /* Color Picker Row */
+        .color-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+        }
+        
+        .color-box {
+            flex: 1;
+            background: rgba(255,255,255,0.05);
+            padding: 10px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        input[type="color"] {
+            border: none;
+            width: 32px;
+            height: 32px;
+            cursor: pointer;
+            background: none;
+            padding: 0;
+        }
+
+        /* --- 5. BUTTONS --- */
+        button {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+            font-family: 'Outfit', sans-serif;
+            text-transform: uppercase;
+        }
+
+        .btn-gen {
+            background: white;
+            color: black;
+            box-shadow: 0 5px 20px rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-gen:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 255, 255, 0.4);
+        }
+
+        .btn-down {
+            background: transparent;
+            border: 2px solid rgba(255,255,255,0.5);
+            color: white;
+            margin-top: 15px;
+            display: none; /* Hidden by default */
+        }
+
+        .btn-down:hover {
+            background: white;
+            color: black;
+            border-color: white;
+        }
+
+        /* --- 6. OUTPUT AREA --- */
+        #qrcode-container {
+            margin-top: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            min-height: 220px;
+            transition: 0.3s;
+            border: 1px dashed rgba(255,255,255,0.3);
+        }
+        
+        #qrcode img {
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        /* --- 7. FOOTER TRADEMARK --- */
+        .footer {
+            margin-top: 40px;
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.5);
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+        }
+
+        .footer span {
+            color: white;
+            font-weight: 700;
+            text-decoration: underline;
+            text-decoration-color: rgba(255,255,255,0.5);
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="main-card">
+        <h1>Qr Generator</h1>
+        <p class="subtitle">Enter a link below to create your code</p>
+
+        <div class="control-group">
+            <label>Destination URL</label>
+            <input type="text" id="urlInput" placeholder="https://www.google.com" autocomplete="off">
+        </div>
+
+        <div class="control-group color-row">
+            <div class="color-box">
+                <label style="margin:0; font-size:10px;">QR COLOR</label>
+                <input type="color" id="colorDark" value="#000000">
+            </div>
+            <div class="color-box">
+                <label style="margin:0; font-size:10px;">BG COLOR</label>
+                <input type="color" id="colorLight" value="#ffffff">
+            </div>
+        </div>
+        
+        <div class="control-group">
+             <label>Resolution</label>
+             <select id="sizeSelect">
+                 <option value="200">Standard (200px)</option>
+                 <option value="300" selected>High Def (300px)</option>
+                 <option value="500">Ultra Print (500px)</option>
+             </select>
+        </div>
+
+        <button class="btn-gen" onclick="generateQR()">Generate Code</button>
+        
+        <div id="qrcode-container">
+            <div id="qrcode"></div>
+        </div>
+
+        <button id="downloadBtn" class="btn-down" onclick="downloadQR()">Download PNG</button>
+
+        <div class="footer">
+            Designed & Developed by <span>Vedant</span>
+        </div>
+    </div>
+
+    <script>
+        // Initial setup
+        var qrcodeContainer = document.getElementById("qrcode");
+        var qrcode = new QRCode(qrcodeContainer, {
+            text: "https://google.com",
+            width: 200,
+            height: 200,
+            colorDark : "#000000",
+            colorLight : "#ffffff",
+            correctLevel : QRCode.CorrectLevel.H
+        });
+
+        function generateQR() {
+            var url = document.getElementById("urlInput").value;
+            var darkColor = document.getElementById("colorDark").value;
+            var lightColor = document.getElementById("colorLight").value;
+            var size = parseInt(document.getElementById("sizeSelect").value);
+            var downloadBtn = document.getElementById("downloadBtn");
+
+            // Validation
+            if (!url) {
+                var input = document.getElementById("urlInput");
+                input.style.borderColor = "#ff4b4b";
+                input.style.boxShadow = "0 0 15px rgba(255, 75, 75, 0.5)";
+                setTimeout(() => {
+                    input.style.borderColor = "rgba(255,255,255,0.15)";
+                    input.style.boxShadow = "none";
+                }, 500);
+                return;
+            }
+
+            // Clear previous
+            qrcodeContainer.innerHTML = "";
+
+            // Generate New
+            new QRCode(qrcodeContainer, {
+                text: url,
+                width: size,
+                height: size,
+                colorDark : darkColor,
+                colorLight : lightColor,
+                correctLevel : QRCode.CorrectLevel.H
+            });
+
+            // Reveal Download Button
+            downloadBtn.style.display = "block";
+            
+            // Adjust container style
+            var container = document.getElementById("qrcode-container");
+            container.style.background = "transparent";
+            container.style.border = "none";
+        }
+
+        function downloadQR() {
+            var img = document.querySelector("#qrcode img");
+            if(img && img.src) {
+                var link = document.createElement("a");
+                link.href = img.src;
+                // Filename includes your brand
+                link.download = "QR-By-Vedant.png"; 
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        }
+    </script>
+
+</body>
+</html>
